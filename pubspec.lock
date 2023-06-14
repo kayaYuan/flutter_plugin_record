@@ -45,10 +45,10 @@ packages:
     dependency: transitive
     description:
       name: crypto
-      sha256: "8be10341257b613566fdc9fd073c46f7c032ed329b1c732bda17aca29f2366c8"
+      sha256: ff625774173754681d66daaf4a448684fb04b78f902da9cb3d308c19cc5e8bab
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.3"
   fake_async:
     dependency: transitive
     description:
@@ -164,18 +164,18 @@ packages:
     dependency: transitive
     description:
       name: typed_data
-      sha256: "53bdf7e979cfbf3e28987552fd72f637e63f3c8724c9e56d9246942dc2fa36ee"
+      sha256: facc8d6582f16042dd49f2463ff1bd6e2c9ef9f3d5da3d9b087e244a7b564b3c
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.3.0"
+    version: "1.3.2"
   uuid:
     dependency: "direct main"
     description:
       name: uuid
-      sha256: e89f208c3032db4478ab847c796d35eb457a06a3025566e10de957c3e91d2ccb
+      sha256: "648e103079f7c64a36dc7d39369cabb358d377078a051d6ae2ad3aa539519313"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.0.2"
+    version: "3.0.7"
   vector_math:
     dependency: transitive
     description:
@@ -185,5 +185,5 @@ packages:
     source: hosted
     version: "2.1.4"
 sdks:
-  dart: ">=2.18.0 <3.0.0"
+  dart: ">=2.19.0 <3.0.0"
   flutter: ">=1.12.0"

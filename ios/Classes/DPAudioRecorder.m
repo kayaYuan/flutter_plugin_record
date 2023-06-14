@@ -1,4 +1,8 @@
-
+// DPAudioRecorder.m
+// 
+// Created by joy on 2022/07/08
+// Copyright (c) 2022年 Tencent. All rights reserved.
+//
 #import "DPAudioRecorder.h"
 #import "DPAudioPlayer.h"
 #import <AVFoundation/AVFoundation.h>
@@ -27,13 +31,17 @@ static const CSVoiceType preferredVoiceType = CSVoiceTypeWav;
     dispatch_source_t timer;
     NSTimeInterval __block audioTimeLength; //录音时长
 }
+
+/// The factory that creates and manages audio player.
 @property (nonatomic, strong) AVAudioRecorder *audioRecorder;
+
+/// The factory that creates and manages originWaveFilePath.
 @property (nonatomic, strong) NSString *originWaveFilePath;
 @end
 
 @implementation DPAudioRecorder
 
-static DPAudioRecorder *recorderManager = nil;
+static DPAudioRecorder *gRecorderManager = nil;
 
 
 + (DPAudioRecorder *)sharedInstance
@@ -41,10 +49,10 @@ static DPAudioRecorder *recorderManager = nil;
     static dispatch_once_t onceToken;
     
     dispatch_once(&onceToken,^{
-        recorderManager = [[DPAudioRecorder alloc] init];
+        gRecorderManager = [[DPAudioRecorder alloc] init];
     });
     
-    return recorderManager;
+    return gRecorderManager;
 }
 
 
@@ -155,12 +163,18 @@ static DPAudioRecorder *recorderManager = nil;
     audioTimeLength = 0;
     NSTimeInterval timeInterval = 0.1;
     __weak typeof(self) weakSelf = self;
-    [[JX_GCDTimerManager sharedInstance] scheduledDispatchTimerWithName:TimerName timeInterval:timeInterval queue:nil repeats:YES actionOption:AbandonPreviousAction action:^{
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        strongSelf->audioTimeLength += timeInterval;
-        if (strongSelf->audioTimeLength >= MAX_RECORDER_TIME) { //大于等于 MAX_RECORDER_TIME 秒停止
-            [strongSelf stopRecording];
-        }
+    [[JX_GCDTimerManager sharedInstance] 
+        scheduledDispatchTimerWithName:TimerName 
+        timeInterval:timeInterval 
+        queue:nil 
+        repeats:YES 
+        actionOption:AbandonPreviousAction 
+        action:^{
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            strongSelf->audioTimeLength += timeInterval;
+            if (strongSelf->audioTimeLength >= MAX_RECORDER_TIME) { //大于等于 MAX_RECORDER_TIME 秒停止
+                [strongSelf stopRecording];
+            }
     }];
 }
 
@@ -216,7 +230,7 @@ static DPAudioRecorder *recorderManager = nil;
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             NSUInteger location = 4100;
             NSData *body = [cacheAudioData subdataWithRange:NSMakeRange(location, cacheAudioData.length - location)];
-            NSMutableData *data1 = WriteWavFileHeader(body.length + 44, 8000, 1, 16).mutableCopy;
+            NSMutableData *data1 = writeWavFileHeader(body.length + 44, 8000, 1, 16).mutableCopy;
             [data1 appendData:body];
 //            NSLog(@"date1date1date1date1[0-200]:%@", [data1 subdataWithRange:NSMakeRange(0, 200)]);
             
@@ -241,7 +255,7 @@ static DPAudioRecorder *recorderManager = nil;
     }
 }
 
-NSData* WriteWavFileHeader(long lengthWithHeader, int sampleRate, int channels, int PCMBitDepth) {
+NSData* writeWavFileHeader(long lengthWithHeader, int sampleRate, int channels, int pcmBitDepth) {
     Byte header[44];
     header[0] = 'R';  // RIFF/WAVE header
     header[1] = 'I';
@@ -272,14 +286,14 @@ NSData* WriteWavFileHeader(long lengthWithHeader, int sampleRate, int channels, 
     header[25] = (Byte) ((sampleRate >> 8) & 0xff);
     header[26] = (Byte) ((sampleRate >> 16) & 0xff);
     header[27] = (Byte) ((sampleRate >> 24) & 0xff);
-    int byteRate = sampleRate * channels * PCMBitDepth >> 3;
+    int byteRate = sampleRate * channels * pcmBitDepth >> 3;
     header[28] = (Byte) (byteRate & 0xff);
     header[29] = (Byte) ((byteRate >> 8) & 0xff);
     header[30] = (Byte) ((byteRate >> 16) & 0xff);
     header[31] = (Byte) ((byteRate >> 24) & 0xff);
-    header[32] = (Byte) (channels * PCMBitDepth >> 3); // block align
+    header[32] = (Byte) (channels * pcmBitDepth >> 3); // block align
     header[33] = 0;
-    header[34] = PCMBitDepth; // bits per sample
+    header[34] = pcmBitDepth; // bits per sample
     header[35] = 0;
     header[36] = 'd'; //"data" marker
     header[37] = 'a';
@@ -302,12 +316,12 @@ NSData* WriteWavFileHeader(long lengthWithHeader, int sampleRate, int channels, 
     __weak __typeof(self) weakSelf = self;
 
     dispatch_source_set_event_handler(timer, ^{
-        __strong __typeof(weakSelf) _self = weakSelf;
+        __strong __typeof(weakSelf) selfCopy = weakSelf;
         
-        [_self->_audioRecorder updateMeters];
-        double lowPassResults = pow(10, (0.05 * [_self->_audioRecorder averagePowerForChannel:0]));
-        if (_self.audioSpeakPower) {
-            _self.audioSpeakPower(lowPassResults);
+        [selfCopy->_audioRecorder updateMeters];
+        double lowPassResults = pow(10, (0.05 * [selfCopy->_audioRecorder averagePowerForChannel:0]));
+        if (selfCopy.audioSpeakPower) {
+            selfCopy.audioSpeakPower(lowPassResults);
         }
     });
     

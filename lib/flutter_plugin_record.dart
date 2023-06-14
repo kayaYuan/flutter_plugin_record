@@ -54,7 +54,7 @@ class FlutterPluginRecord {
       _responsePlayStateController.stream;
 
   ///原生回调
-  static Future<dynamic> _handler(MethodCall methodCall) async{
+  static Future<dynamic> _handler(MethodCall methodCall) async {
     // print("--------FlutterPluginRecord " + methodCall.method);
 
     String id = (methodCall.arguments as Map)['id'];
