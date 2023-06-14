@@ -213,6 +213,9 @@ class FlutterPluginRecordPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
         var packageManager = activity.packageManager
         var permission = PackageManager.PERMISSION_GRANTED == packageManager.checkPermission(Manifest.permission.RECORD_AUDIO,activity.packageName)
         if (permission) {
+            if(audioHandler == null) {
+                initRecord();
+            }
             Log.d("android voice  ", "start")
             //        recorderUtil.startRecord();
             if (audioHandler?.isRecording == true) {
@@ -238,6 +241,9 @@ class FlutterPluginRecordPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
         var packageManager = activity.packageManager
         var permission = PackageManager.PERMISSION_GRANTED == packageManager.checkPermission(Manifest.permission.RECORD_AUDIO, activity.packageName)
         if (permission) {
+            if(audioHandler == null) {
+                initRecord();
+            }
             Log.d("android voice  ", "start")
             val _id = call.argument<String>("id")
             val wavPath = call.argument<String>("wavPath")
@@ -478,6 +484,6 @@ class FlutterPluginRecordPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
         return false
     }
 
-    
+
 
 }
