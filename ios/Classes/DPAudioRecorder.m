@@ -1,5 +1,5 @@
 // DPAudioRecorder.m
-// 
+//
 // Created by joy on 2022/07/08
 // Copyright (c) 2022年 Tencent. All rights reserved.
 //
@@ -47,11 +47,11 @@ static DPAudioRecorder *gRecorderManager = nil;
 + (DPAudioRecorder *)sharedInstance
 {
     static dispatch_once_t onceToken;
-    
+
     dispatch_once(&onceToken,^{
         gRecorderManager = [[DPAudioRecorder alloc] init];
     });
-    
+
     return gRecorderManager;
 }
 
@@ -66,9 +66,9 @@ static DPAudioRecorder *gRecorderManager = nil;
             [[NSData data] writeToFile:wavRecordFilePath atomically:YES];
         }
         self.originWaveFilePath = wavRecordFilePath;
-        
+
         NSLog(@"ios------初始化默认录制文件路径---%@",wavRecordFilePath);
-    
+
     }
     return self;
 }
@@ -81,29 +81,29 @@ static DPAudioRecorder *gRecorderManager = nil;
         [[NSData data] writeToFile:mp3RecordFilePath atomically:YES];
     }
     self.originWaveFilePath = mp3RecordFilePath;
-    
+
     NSLog(@"ios------初始化录制文件路径---%@",mp3RecordFilePath);
 
 }
 
 - (NSString *) createMp3FilePath {
     return [NSTemporaryDirectory() stringByAppendingPathComponent:@"WAVtemporaryRadio.MP3"];
-  
+
 }
 - (NSString *) createWaveFilePath {
     return [NSTemporaryDirectory() stringByAppendingPathComponent:@"WAVtemporaryRadio.wav"];
-  
+
 }
 
 /// 根据传递过来的文件路径创建wav录制文件路径
 /// @param wavPath 传递的文件路径
 - (void)initByWavPath:(NSString *) wavPath{
-        
+
            NSString *wavRecordFilePath = wavPath;
            if (![[NSFileManager defaultManager] fileExistsAtPath:wavRecordFilePath]) {
                [[NSData data] writeToFile:wavRecordFilePath atomically:YES];
            }
-           
+
          self.originWaveFilePath = wavRecordFilePath;
         NSLog(@"ios-----传递的录制文件路径-------- %@",wavRecordFilePath);
 }
@@ -112,20 +112,20 @@ static DPAudioRecorder *gRecorderManager = nil;
 - (void)startRecording
 {
     if (isRecording) return;
-    
+
     [[DPAudioPlayer sharedInstance]stopPlaying];
     //开始录音
     [[AVAudioSession sharedInstance] setCategory: AVAudioSessionCategoryPlayAndRecord error:nil];
     //    //默认情况下扬声器播放
      AVAudioSessionPortOverride portOverride = AVAudioSessionPortOverrideNone;
     [[AVAudioSession sharedInstance] overrideOutputAudioPort:portOverride error:nil];
-    
+
     [[AVAudioSession sharedInstance] setActive:YES error:nil];
 
     [self.audioRecorder prepareToRecord];
-    
+
     [self.audioRecorder record];
-    
+
     if ([self.audioRecorder isRecording]) {
         isRecording = YES;
         [self activeTimer];
@@ -137,8 +137,8 @@ static DPAudioRecorder *gRecorderManager = nil;
             self.audioStartRecording(NO);
         }
     }
-    
-    
+
+
     [self createPickSpeakPowerTimer];
 }
 
@@ -149,7 +149,7 @@ static DPAudioRecorder *gRecorderManager = nil;
     [self shutDownTimer];
     [self.audioRecorder stop];
     self.audioRecorder = nil;
-    
+
     //设置播放语音为k公开模式
     AVAudioSession *avAudioSession = [AVAudioSession sharedInstance];
     [avAudioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:nil];
@@ -158,17 +158,17 @@ static DPAudioRecorder *gRecorderManager = nil;
 
 - (void)activeTimer
 {
-    
+
     //录音时长
     audioTimeLength = 0;
     NSTimeInterval timeInterval = 0.1;
     __weak typeof(self) weakSelf = self;
-    [[JX_GCDTimerManager sharedInstance] 
-        scheduledDispatchTimerWithName:TimerName 
-        timeInterval:timeInterval 
-        queue:nil 
-        repeats:YES 
-        actionOption:AbandonPreviousAction 
+    [[JX_GCDTimerManager sharedInstance]
+        scheduledDispatchTimerWithName:TimerName
+        timeInterval:timeInterval
+        queue:nil
+        repeats:YES
+        actionOption:AbandonPreviousAction
         action:^{
             __strong typeof(weakSelf) strongSelf = weakSelf;
             strongSelf->audioTimeLength += timeInterval;
@@ -185,20 +185,20 @@ static DPAudioRecorder *gRecorderManager = nil;
 
 - (AVAudioRecorder *)audioRecorder {
     if (!_audioRecorder) {
-        
+
         //暂存录音文件路径
         NSString *wavRecordFilePath = self.originWaveFilePath;
         NSLog(@"%@", wavRecordFilePath);
         NSDictionary *param =
-        @{AVSampleRateKey:@8000.0,    //采样率
+        @{AVSampleRateKey:@16000.0,    //采样率
           AVFormatIDKey:@(kAudioFormatLinearPCM),//音频格式
           AVLinearPCMBitDepthKey:@16,    //采样位数 默认 16
           AVNumberOfChannelsKey:@1,   // 通道的数目
-          AVEncoderAudioQualityKey:@(AVAudioQualityMin),
-          AVEncoderBitRateKey:@16000,
+        //   AVEncoderAudioQualityKey:@(AVAudioQualityMin),
+        //   AVEncoderBitRateKey:@44100,
 //          AVEncoderBitRateStrategyKey:AVAudioBitRateStrategy_VariableConstrained
           };
-        
+
         NSError *initError;
         NSURL *fileURL = [NSURL fileURLWithPath:wavRecordFilePath];
         _audioRecorder = [[AVAudioRecorder alloc] initWithURL:fileURL settings:param error:&initError];
@@ -224,7 +224,7 @@ static DPAudioRecorder *gRecorderManager = nil;
             cacheAudioData = [NSData dataWithContentsOfFile:wavRecordFilePath];
             break;
     }
-    
+
     //大于最小录音时长时,发送数据
     if (audioTimeLength > MIN_RECORDER_TIME) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -233,7 +233,7 @@ static DPAudioRecorder *gRecorderManager = nil;
             NSMutableData *data1 = writeWavFileHeader(body.length + 44, 8000, 1, 16).mutableCopy;
             [data1 appendData:body];
 //            NSLog(@"date1date1date1date1[0-200]:%@", [data1 subdataWithRange:NSMakeRange(0, 200)]);
-            
+
             dispatch_sync(dispatch_get_main_queue(), ^{
                 if (self.audioRecorderFinishRecording) {
                     self.audioRecorderFinishRecording(data1, self->audioTimeLength,wavRecordFilePath);
@@ -245,9 +245,9 @@ static DPAudioRecorder *gRecorderManager = nil;
             self.audioRecordingFail(@"录音时长小于设定最短时长");
         }
     }
-    
+
     isRecording = NO;
-    
+
     //取消定时器
     if (timer) {
         dispatch_source_cancel(timer);
@@ -312,19 +312,19 @@ NSData* writeWavFileHeader(long lengthWithHeader, int sampleRate, int channels, 
 {
     timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
     dispatch_source_set_timer(timer, DISPATCH_TIME_NOW, 0.01 * NSEC_PER_SEC, 1ull * NSEC_PER_SEC);
-    
+
     __weak __typeof(self) weakSelf = self;
 
     dispatch_source_set_event_handler(timer, ^{
         __strong __typeof(weakSelf) selfCopy = weakSelf;
-        
+
         [selfCopy->_audioRecorder updateMeters];
         double lowPassResults = pow(10, (0.05 * [selfCopy->_audioRecorder averagePowerForChannel:0]));
         if (selfCopy.audioSpeakPower) {
             selfCopy.audioSpeakPower(lowPassResults);
         }
     });
-    
+
     dispatch_resume(timer);
 }
 
