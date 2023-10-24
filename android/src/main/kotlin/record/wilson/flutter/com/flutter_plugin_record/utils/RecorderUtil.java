@@ -84,11 +84,7 @@ public class RecorderUtil {
     private void initRecorder() {
         recorder = MsRecorder.wav(
                 new File(voicePath),
-                new AudioRecordConfig.Builder()
-                    .setSampleRate(AudioFormat.SAMPLE_RATE_16000)
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .setChannel(AudioFormat.CHANNEL_IN_MONO)
-                    .build(),
+                new AudioRecordConfig(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT),
                 new PullTransport.Default()
                         .setOnAudioChunkPulledListener(new PullTransport.OnAudioChunkPulledListener() {
                             @Override
