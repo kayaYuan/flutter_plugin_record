@@ -3,6 +3,7 @@ package record.wilson.flutter.com.flutter_plugin_record.utils;
 import android.os.Environment;
 import android.util.Log;
 import android.media.AudioFormat;
+import android.media.MediaRecorder;
 
 import com.maple.recorder.recording.AudioChunk;
 import com.maple.recorder.recording.AudioRecordConfig;
@@ -84,7 +85,7 @@ public class RecorderUtil {
     private void initRecorder() {
         recorder = MsRecorder.wav(
                 new File(voicePath),
-                new AudioRecordConfig(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT),
+                new AudioRecordConfig.Default(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT),
                 new PullTransport.Default()
                         .setOnAudioChunkPulledListener(new PullTransport.OnAudioChunkPulledListener() {
                             @Override
