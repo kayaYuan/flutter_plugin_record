@@ -2,6 +2,7 @@ package record.wilson.flutter.com.flutter_plugin_record.utils;
 
 import android.os.Environment;
 import android.util.Log;
+import android.media.AudioFormat;
 
 import com.maple.recorder.recording.AudioChunk;
 import com.maple.recorder.recording.AudioRecordConfig;
